@@ -13,10 +13,12 @@ Password: `postgres`
 # MongoDB
 
 ```
-docker run -d --rm --name ztbd-mongo -p 27017:27017 -v ~/ztbd/mongo:/etc/mongo mongo:latest
+docker run -d --rm --name ztbd-mongo -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=mongo -e MONGO_INITDB_ROOT_PASSWORD=mongo -v ~/ztbd/mongo:/etc/mongo mongo:latest
 ```
 
-NoAuth
+Username: `mongo`
+
+Password: `mongo`
 
 # Cassandra
 
