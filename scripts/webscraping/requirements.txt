@@ -1,5 +1,7 @@
 argparse >= 1.4.0
 pymongo >= 4.3.3
+psycopg >= 3.1.8
+cassandra-driver >= 3.25.0
 beautifulsoup4 >= 4.11.2
 requests >= 2.28.2
 selenium >= 4.8.2

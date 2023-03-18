@@ -3,7 +3,7 @@
 # PostgreSQL
 
 ```
-docker run -d --rm --name ztbd-postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -v ~/ztbd/postgres:/var/lib/postgresql/data postgres:latest
+docker run -d --rm --name ztbd-postgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -v ~/ztbd/postgres:/var/lib/postgresql/data postgres:latest
 ```
 
 Username: `postgres`

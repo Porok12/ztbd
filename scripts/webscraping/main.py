@@ -5,7 +5,8 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-import pymongo
+
+import database_injector
 
 target_url = 'https://www.wunderground.com/history/monthly/pl/warsaw'
 
@@ -51,9 +52,8 @@ def main():
     driver.quit()
     # TODO: process data and insert to db
 
-    client = pymongo.MongoClient('localhost', 27017, username=args.username, password=args.password)
-    db = client.weather_db
-    db.warsaw.insert_one({'test': 123})
+    db = database_injector.DatabaseInjector(args.dbms, args.username, args.password)
+    db.inset_data('todo')
 
 
 if __name__ == "__main__":
