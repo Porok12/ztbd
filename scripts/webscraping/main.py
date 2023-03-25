@@ -1,14 +1,13 @@
+import csv
+import sys
+import logging
 import argparse
-import requests
+from tqdm import tqdm
 from enum import Enum
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from datetime import datetime
 
 import database_injector
-
-target_url = 'https://www.wunderground.com/history/monthly/pl/warsaw'
+import weather_website
 
 
 class Table(Enum):
@@ -19,41 +18,40 @@ class Table(Enum):
 
 
 def main():
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
     # https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dbms', choices=['mongo', 'postgres', 'cassandra'], required=True, help='DBMS type')
-    parser.add_argument('-u', '--username', required=True, help='Username')
-    parser.add_argument('-p', '--password', required=True, help='Password')
+    # TODO: Insert data into all databases at once
+    parser.add_argument('--dbms', choices=['mongo', 'postgres', 'cassandra'], required=True, type=str, help='DBMS type')
+    parser.add_argument('-u', '--username', required=True, type=str, help='Username')
+    parser.add_argument('-p', '--password', required=True, type=str, help='Password')
+    parser.add_argument('-b', '--browser', required=False, type=str, help='Browser', choices=['firefox', 'chrome'],
+                        default='chrome')
+    parser.add_argument('--headless', required=False, type=bool, help='Browser', default=True)
+    parser.add_argument('-s', '--start', required=True, type=lambda s: datetime.strptime(s, '%Y-%m-%d'),
+                        help='Start date')
+    parser.add_argument('-e', '--end', required=True, type=lambda s: datetime.strptime(s, '%Y-%m-%d'), help='End date')
     args = parser.parse_args()
-    print(args)
 
-    # page = requests.get(target_url, timeout=None)
-    # soup = BeautifulSoup(page.content, "html.parser")
-    # results = soup.find_all('table')
-    # print(results)
+    logging.debug('Parsed args: %s' % args)
 
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(
-        options=options,
-        service=Service(ChromeDriverManager().install()),
-    )
-    driver.get(target_url)
-    html = driver.page_source
-    soup = BeautifulSoup(html, features="html.parser")
-    table = soup.find('table', {'class': 'days'})
-
-    data = {}
-    for tab in Table:
-        tmp = table.find_all('table')[tab.value]
-        values = [day.contents for day in tmp.find_all('td')]
-        data[tab.name] = [v[0] for v in values[0:]]
-    print(data)
-    driver.quit()
-    # TODO: process data and insert to db
-
+    website = weather_website.Wunderground(args)
     db = database_injector.DatabaseInjector(args.dbms, args.username, args.password)
-    db.inset_data('todo')
+
+    # TODO: Insert data into database
+    # for data in website.data_range(args.start, args.end):
+    #     logging.info('Data: %s' % data)
+    #     db.inset_data('todo')
+
+    # Temporary write to csv (90kB = 1:30)
+    keys = ['date', 'time', 'temperature', 'dew_point', 'humidity', 'wind', 'wind_speed', 'wind_gust', 'pressure',
+            'precip', 'condition']
+    with open('weather.csv', 'w') as f:
+        w = csv.DictWriter(f, keys)
+        w.writeheader()
+        for data in tqdm(website.data_range(args.start, args.end), total=(args.end - args.start).days):
+            w.writerows(data)
 
 
 if __name__ == "__main__":

@@ -2,13 +2,13 @@
 Collect data to mongodb
 
 ```shell
-$ python3 ./main.py -u mongo -p mongo --dbms mongo
+$ python3 ./main.py -u mongo -p mongo --dbms mongo -s 2020-01-01 -e 2020-01-01
 ```
 
 Collect data to postgres
 
 ```shell
-$ python3 ./main.py -u postgres -p postgres --dbms postgres
+$ python3 ./main.py -u postgres -p postgres --dbms postgres -s 2020-01-01 -e 2020-01-01
 ```
 
 * create `weather_db` database
@@ -23,7 +23,7 @@ $ python3 ./main.py -u postgres -p postgres --dbms postgres
 Collect data to cassandra
 
 ```shell
-$ python3 ./main.py -u cassandra -p cassandra --dbms cassandra
+$ python3 ./main.py -u cassandra -p cassandra --dbms cassandra -s 2020-01-01 -e 2020-01-01
 ```
 
 * create `weather_db` keyspace
