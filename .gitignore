@@ -78,4 +78,5 @@ fabric.properties
 
 # Customs
 *.csv
+__pycache__
 
