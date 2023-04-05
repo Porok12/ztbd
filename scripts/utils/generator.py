@@ -8,7 +8,7 @@ import os
 # Generate 0,5 mln rows in 20 sec = 30 MB
 num_rows = 10000
 
-output_file = 'weather.csv'
+output_file = '../webscraping/weather.csv'
 
 file_exists = os.path.exists(output_file)
 with open(output_file, 'a', newline='') as file:
