@@ -68,6 +68,7 @@ class Wunderground:
         url = '/'.join([self.website_url, d.strftime('%Y-%-m-%-d')])
 
         self.driver.get(url)
+        time.sleep(0.5)  # Workaround to mitigate missing table
         html = self.driver.page_source
         soup = BeautifulSoup(html, features="html.parser")
 
@@ -81,15 +82,14 @@ class Wunderground:
             # )
             EC.text_to_be_present_in_element(
                 (By.CSS_SELECTOR, 'div.observation-table > table > tbody > tr > td > span'),
-                '12:00 AM',
+                '1:00 AM',
             )
         )
 
         # Finding table
         table_parent = soup.find('div', class_='observation-table')
 
-        # Workaround to mitigate missing table
-        time.sleep(0.25)
+        time.sleep(0.5)  # Workaround to mitigate missing table
         if table_parent is None:
             logging.error('Missing table, skipping day %s' % d.strftime('%Y-%m-%d'))
             return []
