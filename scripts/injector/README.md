@@ -2,27 +2,23 @@
 # Inject data to DBMS
 
 ```shell
-$ python3 ./main.py -f ../webscraping/weather.csv --dbms mongo,postgres,cassandra
+# This will delete databases if exist (remove option --init to just insert data)
+$ python3 ./main.py -f ../webscraping/weather.csv --dbms mongo,postgres,cassandra  --init
 ```
 
-## Postgres
+# Example queries
 
-* create `weather_db` database
-  ```sql
-  CREATE DATABASE weather_db
-  ```
-* create `warsaw` table
-  ```sql
-  CREATE TABLE warsaw (id serial PRIMARY KEY, data text)
-  ```
+MongoDB
+```
+db.measurements.find({ temperature: { $gt: 49 } })
+```
 
-## Cassandra
+PostgreSQL
+```
+SELECT * FROM measurements WHERE temperature > 49
+```
 
-* create `weather_db` keyspace
-  ```sql
-  CREATE KEYSPACE weather_db WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
-  ```
-* create table `warsaw`
-  ```sql
-  CREATE TABLE warsaw (id UUID PRIMARY KEY, data text)
-  ```
+Cassandra
+```
+SELECT * FROM measurements WHERE temperature > 49 ALLOW FILTERING
+```

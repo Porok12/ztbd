@@ -1,40 +1,46 @@
-import csv
-import sys
-import logging
 import argparse
-import time
+import csv
+import logging
+import sys
 
 from tqdm import tqdm
-from enum import Enum
-from datetime import datetime
-
 
 import database_injector
 
 
+def blocks(files, size=65536):
+    while True:
+        b = files.read(size)
+        if not b: break
+        yield b
+
+
 def main():
-    logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
     # https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser()
     parser.add_argument('--dbms', default='mongo,postgres,cassandra',
                         type=lambda s: [dbms for dbms in s.split(',')], help='DBMSs')
-    # parser.add_argument('-u', '--username', required=True, type=str, help='Username')
-    # parser.add_argument('-p', '--password', required=True, type=str, help='Password')
+    parser.add_argument('--init', action='store_true', help='Reset and initialize databases')
     parser.add_argument('-f', '--file', required=True, type=str, help='File to read')  # type=argparse.FileType('r')
+    parser.add_argument('-c', '--city', required=False, type=int, help='City id', default=0)
     args = parser.parse_args()
 
-    logging.debug('Parsed args: %s' % args)
+    logging.info('Parsed args: %s' % args)
 
     injector = database_injector.DatabaseInjector(args)
 
-    # with open(args.file, 'r') as f:
-    #     reader = csv.reader(f, delimiter=',')
-    #
-    #     for data in reader:
-    #         time.sleep(0.5)
-    #         injector.inset_data(data)
-    #         print(', '.join(data))
+    rows = 0
+    with open(args.file, 'r', encoding='utf-8', errors='ignore') as f:
+        rows = sum(bl.count("\n") for bl in blocks(f))
+
+    with open(args.file, 'r') as f:
+        reader = csv.DictReader(f, delimiter=',')
+
+        for data in tqdm(reader, total=(rows - 1)):
+            # time.sleep(0.5)
+            injector.inset_data(data)
 
 
 if __name__ == "__main__":
