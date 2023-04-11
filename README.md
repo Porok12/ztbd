@@ -23,10 +23,11 @@ Password: `mongo`
 # Cassandra
 
 ```
-docker run -d --rm --name ztbd-cassandra -p 9042:9042 -e CASSANDRA_PASSWORD=cassandra -v ~/ztbd/cassandra:/var/lib/cassandra cassandra:latest
+docker run -d --rm --name ztbd-cassandra -p 9042:9042 -e CASSANDRA_PASSWORD=cassandra -v ~/ztbd/cassandra:/var/lib/cassandra -v $(git rev-parse --show-toplevel)/config/cassandra.yaml:/etc/cassandra/cassandra.yaml cassandra:latest
 ```
 
 Username: `cassandra`
 
 Password: `cassandra`
 
+NOTE: Using custom config is required as it modifies `batch_size_fail_threshold`

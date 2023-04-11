@@ -25,10 +25,12 @@ def main():
     parser.add_argument('--init', action='store_true', help='Reset and initialize databases')
     parser.add_argument('-f', '--file', required=True, type=str, help='File to read')  # type=argparse.FileType('r')
     parser.add_argument('-c', '--city', required=False, type=int, help='City id', default=0)
+    parser.add_argument('-b', '--batch', required=False, type=int, help='Batch size', default=512)
     args = parser.parse_args()
 
     logging.info('Parsed args: %s' % args)
 
+    batch_size = args.batch
     injector = database_injector.DatabaseInjector(args)
 
     rows = 0
@@ -38,9 +40,13 @@ def main():
     with open(args.file, 'r') as f:
         reader = csv.DictReader(f, delimiter=',')
 
-        for data in tqdm(reader, total=(rows - 1)):
-            # time.sleep(0.5)
-            injector.inset_data(data)
+        batch = []
+        for row, data in enumerate(tqdm(reader, total=(rows - 1))):
+            if row % batch_size == 0 and row > 0:
+                # time.sleep(0.5)
+                injector.inset_batch(batch)
+                batch = []
+            batch.append(data)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from enum import Enum
 from typing import List, TypedDict
+from functools import reduce
 
 import psycopg
 import pymongo
@@ -49,6 +50,18 @@ cities: List[City] = [
         'longitude': 19.944544,
         'latitude': 50.049683,
     },
+    {
+        'country': 'poland',
+        'city': 'wroclaw',
+        'longitude': 17.0319771,
+        'latitude': 51.1099804,
+    },
+    {
+        'country': 'poland',
+        'city': 'katowice',
+        'longitude': 19.0133333,
+        'latitude': 50.2597222,
+    },
 ]
 
 
@@ -66,6 +79,7 @@ class DatabaseInjector:
         self._postgres_db = None
         self._cassandra_db = None
         self._dbms: List[DMBS] = args.dbms
+        self._city: int = args.city
         database_name = 'weather_db'
         measurements_table = 'measurements'
         cities_table = 'cities'
@@ -178,103 +192,108 @@ class DatabaseInjector:
             )
             self._cassandra_db = session
 
-    def inset_data(self, data: Record, i: int = 0):
+    def __to_mongo(self, data: Record, date: datetime, id: int):
+        return {
+            # id is generated
+            'date': date,
+            'temperature': float(data['temperature']),
+            'dew_point': float(data['dew_point']),
+            'humidity': float(data['humidity']),
+            'wind': data['wind'],
+            'wind_speed': float(data['wind_speed']),
+            'wind_gust': float(data['wind_gust']),
+            'pressure': float(data['pressure']),
+            'precip': float(data['precip']),
+            'condition': data['condition'],
+            'location': cities[id]
+        }
+
+    def __to_postgres(self, data: Record, date: datetime, id: int):
+        return (
+            date,
+            float(data['temperature']),
+            float(data['dew_point']),
+            float(data['humidity']),
+            data['wind'],
+            float(data['wind_speed']),
+            float(data['wind_gust']),
+            float(data['pressure']),
+            float(data['precip']),
+            data['condition'],
+            id,
+        )
+
+    def __to_cassandra(self, data: Record, date: datetime, id: int):
+        return (
+            date,
+            float(data['temperature']),
+            float(data['dew_point']),
+            float(data['humidity']),
+            data['wind'],
+            float(data['wind_speed']),
+            float(data['wind_gust']),
+            float(data['pressure']),
+            float(data['precip']),
+            data['condition'],
+            cities[id]['country'],
+            cities[id]['city'],
+            float(cities[id]['longitude']),
+            float(cities[id]['latitude']),
+        )
+
+    def inset_data(self, data: Record):
+        city = self._city
         date = datetime.strptime(' '.join([data['date'], data['time']]), '%Y-%m-%d %H:%M %p')
+
         if DMBS.Mongo.value in self._dbms:
-            self._mongo_db.weather_db.measurements.insert_one({
-                # id is generated
-                'date': date,
-                'temperature': float(data['temperature']),
-                'dew_point': float(data['dew_point']),
-                'humidity': float(data['humidity']),
-                'wind': data['wind'],
-                'wind_speed': float(data['wind_speed']),
-                'wind_gust': float(data['wind_gust']),
-                'pressure': float(data['pressure']),
-                'precip': float(data['precip']),
-                'condition': data['condition'],
-                'location': cities[i]
-            })
+            self._mongo_db.weather_db.measurements.insert_one(
+                self.__to_mongo(data, date, city)
+            )
 
         if DMBS.Postgres.value in self._dbms:
             cur = self._postgres_db.cursor()
             cur.execute(
                 """
-                INSERT INTO measurements (date, 
-                                          temperature, 
-                                          dew_point, 
-                                          humidity, 
-                                          wind, 
-                                          wind_speed, 
-                                          wind_gust, 
-                                          pressure, 
-                                          precip, 
-                                          condition, 
-                                          location) 
+                INSERT INTO measurements (date, temperature, dew_point, humidity, wind, wind_speed, wind_gust, pressure, precip, condition, location) 
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
-                (
-                    date,
-                    float(data['temperature']),
-                    float(data['dew_point']),
-                    float(data['humidity']),
-                    data['wind'],
-                    float(data['wind_speed']),
-                    float(data['wind_gust']),
-                    float(data['pressure']),
-                    float(data['precip']),
-                    data['condition'],
-                    i,
-                )
+                self.__to_postgres(data, date, city)
             )
 
         if DMBS.Cassandra.value in self._dbms:
             self._cassandra_db.execute(
                 """
-                INSERT INTO measurements (id,
-                                          date, 
-                                          temperature, 
-                                          dew_point, 
-                                          humidity, 
-                                          wind, 
-                                          wind_speed, 
-                                          wind_gust, 
-                                          pressure, 
-                                          precip, 
-                                          condition, 
-                                          location)
-                VALUES (uuid(),
-                        %s, 
-                        %s, 
-                        %s, 
-                        %s, 
-                        %s, 
-                        %s, 
-                        %s, 
-                        %s, 
-                        %s, 
-                        %s, 
-                        {
-                            country: %s,
-                            city: %s,
-                            longitude: %s,
-                            latitude: %s
-                        })
+                INSERT INTO measurements (id, date, temperature, dew_point, humidity, wind, wind_speed, wind_gust, pressure, precip, condition, location)
+                VALUES (uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, { country: %s, city: %s, longitude: %s, latitude: %s })
                 """,
-                (
-                    date,
-                    float(data['temperature']),
-                    float(data['dew_point']),
-                    float(data['humidity']),
-                    data['wind'],
-                    float(data['wind_speed']),
-                    float(data['wind_gust']),
-                    float(data['pressure']),
-                    float(data['precip']),
-                    data['condition'],
-                    cities[i]['country'],
-                    cities[i]['city'],
-                    float(cities[i]['longitude']),
-                    float(cities[i]['latitude']),
-                )
+                self.__to_cassandra(data, date, city)
+            )
+
+    def inset_batch(self, batch: List[Record]):
+        city = self._city
+        dates = [datetime.strptime(' '.join([data['date'], data['time']]), '%Y-%m-%d %H:%M %p') for data in batch]
+
+        if DMBS.Mongo.value in self._dbms:
+            self._mongo_db.weather_db.measurements.insert_many([
+                self.__to_mongo(data, dates[i], city) for i, data in enumerate(batch)
+            ])
+
+        if DMBS.Postgres.value in self._dbms:
+            cur = self._postgres_db.cursor()
+            cur.execute(
+                f"""
+                INSERT INTO measurements (date, temperature, dew_point, humidity, wind, wind_speed, wind_gust, pressure, precip, condition, location) 
+                VALUES {("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)," * len(batch))[:-1]}
+                """,
+                reduce(lambda t1, t2: t1 + t2, [self.__to_postgres(data, dates[i], city) for i, data in enumerate(batch)])
+            )
+
+        if DMBS.Cassandra.value in self._dbms:
+            self._cassandra_db.execute(
+                f"""
+                BEGIN BATCH
+                {"INSERT INTO measurements (id, date, temperature, dew_point, humidity, wind, wind_speed, wind_gust, pressure, precip, condition, location) VALUES (uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, { country: %s, city: %s, longitude: %s, latitude: %s });" * len(batch)}
+                APPLY BATCH;
+                """,
+                reduce(lambda t1, t2: t1 + t2, [self.__to_cassandra(data, dates[i], city) for i, data in enumerate(batch)])
             )
