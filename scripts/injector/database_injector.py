@@ -99,7 +99,7 @@ class DatabaseInjector:
                     "host='127.0.0.1' port=5432 user='postgres' password='postgres' dbname='postgres'",
                     autocommit=True,
                 )
-                conn.execute("DROP DATABASE weather_db")
+                conn.execute("DROP DATABASE weather_db")  # Comment it if db does not exists
                 conn.execute("CREATE DATABASE weather_db")
                 conn.close()
             conn = psycopg.connect(
