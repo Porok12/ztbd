@@ -1,0 +1,19 @@
+{
+  "name": "app",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "echo \"Start\" && exit 0",
+    "test": "echo \"Test\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cassandra-driver": "^4.6.4",
+    "mongoose": "^7.0.4",
+    "pg": "^8.10.0",
+    "sequelize": "^6.31.0"
+  }
+}
