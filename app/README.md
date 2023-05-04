@@ -2,6 +2,13 @@ Install dependencies
 
 ```shell
 $ npm ci
+$ npm install express
+$ npm install cors
+```
+
+Start the server:
+```shell
+$ node index.js
 ```
 
 Requirements:

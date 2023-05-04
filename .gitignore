@@ -82,4 +82,4 @@ fabric.properties
 # Customs
 *.csv
 __pycache__
-
+.venv

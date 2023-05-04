@@ -1,6 +1,6 @@
-import {DataTypes, Sequelize} from 'sequelize';
+import {DataTypes, Sequelize, Op} from 'sequelize';
 
-const sequelize = new Sequelize('postgres://postgres:postgres@localhost:5432/weather_db');
+export const sequelize = new Sequelize('postgres://postgres:postgres@localhost:5432/weather_db');
 
 const City = sequelize.define('cities', {
     country: {
@@ -74,19 +74,37 @@ const Measurements = sequelize.define('measurements', {
     timestamps: false,
 });
 
-Measurements.hasOne(City, { foreignKey: 'id', sourceKey: 'location' });
+
+// Measurements.hasOne(City, { foreignKey: 'id', sourceKey: 'location' });
+export const measurePostgres = Measurements;
+export const cityPostgres = City;
+
 // City.belongsTo(Measurements, { targetKey: 'id', foreignKey: 'location' });
 
-try {
-    await sequelize.authenticate();
-    console.log('Connection has been established successfully.');
-    const measurements = await Measurements.findOne({
-        raw: true,
-        include: [{ model: City }],
-    });
-    console.log(measurements);
-} catch (error) {
-    console.error('Unable to connect to the database:', error);
-} finally {
-    await sequelize.close();
-}
+// module.exports = sequelize.model('Measurements', Measurements);
+// async function fff(){
+// try {
+//     await sequelize.authenticate();
+//     console.log('Connection has been established successfully.');
+//     console.time("dbsave");
+//     const measurements = await Measurements.findAll({
+//         attributes: [
+//             [sequelize.fn('COUNT', sequelize.col('temperature')), 'temp'],
+//         ],
+
+//         where: {
+//             temperature: {[Op.lte]: 32}
+//         },
+//         raw: true,
+//         include: [{ model: City,
+//         attributes: ['city'] }],
+//         group: '"city"'
+//     });
+//     console.timeEnd("dbsave");
+//     console.log(measurements);
+// } catch (error) {
+//     console.error('Unable to connect to the database:', error);
+// } finally {
+//     await sequelize.close();
+// }
+// }
