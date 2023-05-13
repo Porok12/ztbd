@@ -1,32 +1,28 @@
 import express from "express";
-const app = express();
 import path from "path";
-const router = express.Router();
-import cors from "cors";
-import {countTimeMongo, countTime, countTimeCassandra} from "./src/controllers/controller.js"
+import {countTime, countTimeCassandra, countTimeMongo} from "./src/controllers/controller.js";
+import {testcase1} from "./src/controllers/testcase1.js";
+import {queryData} from "./src/controllers/query.js";
 
+const app = express();
+
+const port = process.env.port || 3500;
 const __dirname = path.resolve(path.dirname(''));
+const publicPath = path.join(__dirname, 'ui', 'build');
 
-app.use(cors())
+app.use(express.static(publicPath));
 
-router.get("/", (req, res) => {
-    res.send("Server");
+app.get('/test3', countTimeCassandra)
+app.get('/test2', countTimeMongo);
+app.get('/test', countTime);
+
+app.get('/testcase1', testcase1);
+app.get('/query', queryData);
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-router.route('/test3').get(countTimeCassandra)
-router.route('/test2').get(countTimeMongo);
-router.route('/test').get(countTime);
+app.listen(port);
 
-app.use("/", router);
-app.use("/test3", router);
-app.use("/test2", router);
-app.use("/test", router);
-
-
-app.get('*', function (req, res) {
-    res.send('ERR 404', 404);
-});
-
-app.listen(process.env.port || 3500);
-
-console.log("Running at Port 3500");
+console.log(`Running at http://localhost:${port}`);

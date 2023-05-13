@@ -1,22 +1,28 @@
 {
   "name": "app",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "",
-  "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "echo \"Start\" && exit 0",
-    "test": "echo \"Test\" && exit 1"
+    "ci": "npm ci",
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "engines": {
+    "npm": ">=8.0.0",
+    "node": ">=16.0.0"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.4.0",
     "cassandra-driver": "^4.6.4",
-    "cors": "^2.8.5",
     "express": "^4.18.2",
     "mongoose": "^7.0.4",
     "pg": "^8.10.0",
     "sequelize": "^6.31.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }

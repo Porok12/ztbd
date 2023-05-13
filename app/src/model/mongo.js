@@ -21,15 +21,8 @@ const measurementsSchema = new mongoose.Schema({
 
 });
 
+measurementsSchema.index({ date: 1 });
+measurementsSchema.index({ 'location.city': 1, date: 1 });
+
 export const Measurements = mongoose.model('Measurements', measurementsSchema);
 
-// try {
-//     await mongoose.connect('mongodb://mongo:mongo@localhost:27017/weather_db?authSource=admin&w=1');
-//     console.log('Connection has been established successfully.');
-//     const measurements = await Measurements.findOne({});
-//     console.log(measurements);
-// } catch (error) {
-//     console.error('Unable to connect to the database:', error);
-// } finally {
-//     await mongoose.disconnect();
-// }

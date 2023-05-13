@@ -1,14 +1,23 @@
 Install dependencies
 
 ```shell
-$ npm ci
-$ npm install express
-$ npm install cors
+$ npm ci # in 'app' folder
+$ npm ci # in 'ui' folder
+```
+
+Build frontend:
+```shell
+# in ui folder
+$ npm run build
+# or use
+$ npm run start # for live development
 ```
 
 Start the server:
 ```shell
-$ node index.js
+$ npm run start
+# or 
+$ npm run dev # for life development
 ```
 
 Requirements:
