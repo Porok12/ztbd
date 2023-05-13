@@ -9,42 +9,58 @@ import { performance } from 'perf_hooks';
 const countTimePostgres = async () => {
     try {
         await sequelize.authenticate();
+        console.log('Connection has been established successfully.');
         const startTime = performance.now()
-        await PsqlMeasurements.findAll({
-            limit: 1000000,
-            where: {
-                dew_point: { [Op.gte]: 15 }
-            },
+        const measurements = await PsqlMeasurements.findAll({
+            attributes: [
+                [sequelize.fn('to_char', sequelize.col('date'), 'MM'), 'month'],
+                [sequelize.fn('AVG', sequelize.col('temperature')), 'temp'],
+            ],
             raw: true,
+            group: 'month',
         });
         const endTime = performance.now();
+        console.log(measurements);
         return (endTime - startTime) / 1000;
     } catch (error) {
         console.error('Unable to connect to the database:', error);
         return -1;
     }
 }
+
 
 const countTimeMongo = async () => {
     try {
         await mongoose.connect('mongodb://mongo:mongo@localhost:27017/weather_db?authSource=admin&w=1');
         const startTime = performance.now()
-        await MongoMeasurements.find({ dew_point: { $gte: 15 } }).limit(1000000);
+        const measurements = await MongoMeasurements.aggregate([
+            {
+                $group: {
+                    _id: { $month: "$date" },
+                    temp: {
+                        $avg: "$temperature"
+                    }
+                }
+            }
+        ]);
         const endTime = performance.now();
+        console.log(measurements);
         return (endTime - startTime) / 1000;
     } catch (error) {
         console.error('Unable to connect to the database:', error);
         return -1;
     } finally {
-        // await mongoose.disconnect();
+        await mongoose.disconnect();
     }
 }
+
 
 const countTimeCassandra = async () => {
     try {
         await client.connect();
         const startTime = performance.now()
-        await client.execute('SELECT * FROM measurements WHERE dew_point >= 15');
+        const measurements = await client.execute('SELECT * FROM measurements LIMIT 1');
+        console.log(measurements.rows);
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
     } catch (error) {
@@ -53,7 +69,7 @@ const countTimeCassandra = async () => {
     }
 }
 
-export const testcase1 = async (req, res) => {
+export const testcase3 = async (req, res) => {
     const mongo = await countTimeMongo();
     const postgres = await countTimePostgres();
     const cassandra = await countTimeCassandra();

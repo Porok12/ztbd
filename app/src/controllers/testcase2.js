@@ -11,11 +11,16 @@ const countTimePostgres = async () => {
         await sequelize.authenticate();
         const startTime = performance.now()
         await PsqlMeasurements.findAll({
-            limit: 1000000,
-            where: {
-                dew_point: { [Op.gte]: 15 }
-            },
             raw: true,
+            limit: 1000000,
+            include: [{
+                model: PsqlCity,
+                where: {
+                    city: {
+                        [Op.eq]: 'cracow'
+                    }
+                }
+            }],
         });
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
@@ -25,11 +30,14 @@ const countTimePostgres = async () => {
     }
 }
 
+
 const countTimeMongo = async () => {
     try {
         await mongoose.connect('mongodb://mongo:mongo@localhost:27017/weather_db?authSource=admin&w=1');
         const startTime = performance.now()
-        await MongoMeasurements.find({ dew_point: { $gte: 15 } }).limit(1000000);
+        await MongoMeasurements.find({
+            'location.city': 'cracow'
+        }).limit(1000000);
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
     } catch (error) {
@@ -40,11 +48,12 @@ const countTimeMongo = async () => {
     }
 }
 
+
 const countTimeCassandra = async () => {
     try {
         await client.connect();
         const startTime = performance.now()
-        await client.execute('SELECT * FROM measurements WHERE dew_point >= 15');
+        await client.execute('SELECT * FROM measurements WHERE location.city=warsaw'); //TODO
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
     } catch (error) {
@@ -53,7 +62,7 @@ const countTimeCassandra = async () => {
     }
 }
 
-export const testcase1 = async (req, res) => {
+export const testcase2 = async (req, res) => {
     const mongo = await countTimeMongo();
     const postgres = await countTimePostgres();
     const cassandra = await countTimeCassandra();

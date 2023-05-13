@@ -18,6 +18,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import SelectCity from "./SelectCity";
+import SelectDatabase from "./SelectDatabase";
 
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from "@mui/material/Typography";
@@ -37,8 +38,8 @@ export const Chart = () => {
     const [from, setFrom] = useState(lastMeasurement.add(-7, 'day'));
     const [to, setTo] = useState(lastMeasurement);
     const [city, setCity] = useState('warsaw');
+    const [db, setDb] = useState('mongo');
     const [data, setData] = useState([]);
-    const [pending, setPending] = useState(true);
     const [executedIn, setExecutedIn] = useState(null);
 
     useEffect(() => {
@@ -47,18 +48,19 @@ export const Chart = () => {
             from: from.format('YYYY-MM-DD'),
             to: to.format('YYYY-MM-DD'),
             city,
+            db,
         }
        fetch('/query?' + new URLSearchParams(params))
            .then(response => response.json())
            .then(response => {
-               setExecutedIn(Math.round(response.time * 100 / 60) / 100);
+               setExecutedIn(Math.round(response.time * 100) / 100);
                setData(response.data);
            })
-    }, [from, to, city]);
+    }, [from, to, city, db]);
 
     return (
         <>
-            <Box display="flex" justifyContent="center" gap={4}>
+            <Box display="flex" justifyContent="center" gap={4} mb={4}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DemoContainer components={['DatePicker']}>
                         <DatePicker label="From" value={from} onChange={setFrom} />
@@ -70,9 +72,9 @@ export const Chart = () => {
                     </DemoContainer>
                 </LocalizationProvider>
                 <SelectCity value={city} onChange={setCity} />
-                TODO: DATABASE
+                <SelectDatabase value={db} onChange={setDb} />
                 <Box sx={{ display: 'flex', marginTop: '16px' }}>
-                    {executedIn ? <Typography variant="h4" color="text.secondary">{executedIn}s</Typography> : <CircularProgress />}
+                    {executedIn !== null ? <Typography variant="h4" color="text.secondary">{executedIn}s</Typography> : <CircularProgress />}
                 </Box>
             </Box>
 
@@ -85,8 +87,14 @@ export const Chart = () => {
                             id: 1,
                             label: 'Temperature',
                             data: data.map(d => d.temperature),
-                            borderColor: '#aa0000'
-                        }
+                            borderColor: '#e71e1e'
+                        },
+                        {
+                            id: 2,
+                            label: 'Humidity',
+                            data: data.map(d => d.humidity),
+                            borderColor: '#1169de'
+                        },
                     ],
                 }}
             />

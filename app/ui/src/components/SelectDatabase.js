@@ -5,25 +5,25 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 
-const cities = ['warsaw', 'cracow', 'wroclaw', 'katowice'];
+const databases = ['mongo', 'postgres', 'cassandra'];
 
-export default function SelectCity({ value: city, onChange: setCity }) {
+export default function SelectCity({ value: db, onChange: setDb }) {
 
     const handleChange = (event) => {
-        setCity(event.target.value);
+        setDb(event.target.value);
     };
 
     return (
         <Box sx={{ minWidth: 120, marginTop: '8px' }}>
             <FormControl fullWidth>
-                <InputLabel id="select-city-label">City</InputLabel>
+                <InputLabel id="select-db-label">Database</InputLabel>
                 <Select
-                    labelId="select-city-label"
-                    value={city}
-                    label="City"
+                    labelId="select-db-label"
+                    value={db}
+                    label="Database"
                     onChange={handleChange}
                 >
-                    {cities.map(city => <MenuItem key={city} value={city}>{city}</MenuItem>)}
+                    {databases.map(db => <MenuItem key={db} value={db}>{db}</MenuItem>)}
                 </Select>
             </FormControl>
         </Box>

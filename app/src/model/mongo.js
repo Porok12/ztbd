@@ -25,4 +25,3 @@ measurementsSchema.index({ date: 1 });
 measurementsSchema.index({ 'location.city': 1, date: 1 });
 
 export const Measurements = mongoose.model('Measurements', measurementsSchema);
-

@@ -4,6 +4,7 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -16,47 +17,83 @@ import {useState} from "react";
 
 const testcases = [
     {
-        title: 'testcase1',
+        title: 'Query po "dew_point" (nieindeksowane)',
         url: '/testcase1',
         data: {
             mongo: 0,
             cassandra: 0,
             postgres: 0,
-        }
+        },
+        loading: false,
     },
     {
-        title: 'testcase2',
+        title: 'Query po "city" (indeksowane)',
         url: '/testcase2',
         data: {
             mongo: 0,
             cassandra: 0,
             postgres: 0,
-        }
-    }
+        },
+        loading: false,
+    },
+    {
+        title: 'Średnia miesięczna temperatura',
+        url: '/testcase3',
+        data: {
+            mongo: 0,
+            cassandra: 0,
+            postgres: 0,
+        },
+        loading: false,
+    },
+    {
+        title: 'testcase4',
+        url: '/testcase4',
+        data: {
+            mongo: 0,
+            cassandra: 0,
+            postgres: 0,
+        },
+        loading: false,
+    },
+    {
+        title: 'testcase5',
+        url: '/testcase5',
+        data: {
+            mongo: 0,
+            cassandra: 0,
+            postgres: 0,
+        },
+        loading: false,
+    },
+    {
+        title: 'testcase6',
+        url: '/testcase6',
+        data: {
+            mongo: 0,
+            cassandra: 0,
+            postgres: 0,
+        },
+        loading: false,
+    },
 ];
 
-export const Testcase = (props) => {
-    const {
-        title
-    } = props;
-
+export const Testcase = () => {
     const [data, setData] = useState(testcases);
 
     const update = (url) => {
         return () => {
+            // Set loading to true
+            setData(prevState => prevState.map(testcase => {
+                return testcase.url === url ? { ...testcase, loading: true } : testcase;
+            }));
+            // Fetch data from API
             fetch(url)
                 .then(response => response.json())
                 .then(response => {
                     setData(prevState => prevState.map(testcase => {
-                        if (testcase.url === url) {
-                            return {
-                                ...testcase,
-                                data: response
-                            }
-                        } else {
-                            return testcase;
-                        }
-                    }))
+                        return testcase.url === url ? { ...testcase, data: response, loading: false } : testcase;
+                    }));
                 });
         }
     }
@@ -64,7 +101,7 @@ export const Testcase = (props) => {
     return (
         <>
         <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table sx={{ minWidth: 650 }}>
             <TableHead>
                 <TableRow>
                     <TableCell>Testcase</TableCell>
@@ -75,7 +112,7 @@ export const Testcase = (props) => {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {data.map(({title, url, data}) => (
+                {data.map(({title, url, data, loading}) => (
                     <TableRow
                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
@@ -86,31 +123,15 @@ export const Testcase = (props) => {
                         <TableCell align="right">{data.cassandra}s</TableCell>
                         <TableCell align="right">{data.postgres}s</TableCell>
                         <TableCell align="right">
-                            <Button variant="contained" onClick={update(url)}>
+                            <LoadingButton variant="contained" onClick={update(url)} loading={loading}>
                                 Aktualizuj
-                            </Button>
+                            </LoadingButton>
                         </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
         </Table>
         </TableContainer>
-        {/*<Card>*/}
-        {/*    <CardContent>*/}
-        {/*        <Typography variant="h4" color="text.primary" gutterBottom>*/}
-        {/*            {title}*/}
-        {/*        </Typography>*/}
-        {/*        Mongo*/}
-        {/*        Cassandra*/}
-        {/*        Postgres*/}
-        {/*    </CardContent>*/}
-        {/*    <CardActions>*/}
-        {/*        <Box flexGrow={1} />*/}
-        {/*        <Button variant="contained" onClick={update}>*/}
-        {/*            Aktualizuj*/}
-        {/*        </Button>*/}
-        {/*    </CardActions>*/}
-        {/*</Card>*/}
         </>
     );
 }

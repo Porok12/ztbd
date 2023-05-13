@@ -10,12 +10,3 @@ export const client = new cassandra.Client({
     }
 });
 
-// try {
-//     await client.connect();
-//     const measurements = await client.execute('SELECT * FROM measurements LIMIT 1');
-//     console.log(measurements.rows);
-// } catch (error) {
-//     console.error('Unable to connect to the database:', error);
-// } finally {
-//     await client.shutdown();
-// }
