@@ -99,7 +99,7 @@ class DatabaseInjector:
                     "host='127.0.0.1' port=5432 user='postgres' password='postgres' dbname='postgres'",
                     autocommit=True,
                 )
-                conn.execute("DROP DATABASE weather_db")  # Comment it if db does not exists
+                # conn.execute("DROP DATABASE weather_db")  # Comment it if db does not exists
                 conn.execute("CREATE DATABASE weather_db")
                 conn.close()
             conn = psycopg.connect(
@@ -271,7 +271,7 @@ class DatabaseInjector:
 
     def inset_batch(self, batch: List[Record]):
         city = self._city
-        dates = [datetime.strptime(' '.join([data['date'], data['time']]), '%Y-%m-%d %H:%M %p') for data in batch]
+        dates = [datetime.strptime(' '.join([data['date'], data['time']]), '%Y-%m-%d %I:%M %p') for data in batch]
 
         if DMBS.Mongo.value in self._dbms:
             self._mongo_db.weather_db.measurements.insert_many([

@@ -15,7 +15,7 @@ const queryMongo = async (from, to, city) => {
         const measurements = await MongoMeasurement.find({
             date: { $gt: new Date(from), $lt: new Date(to) },
             'location.city': { $eq: city }
-        });
+        }).sort({date:1});
         const endTime = performance.now();
         await mongo.disconnect();
         data = measurements;
@@ -38,7 +38,7 @@ const queryPostgres = async (from, to, city) => {
             where: {
                 date: {
                     [Op.gt]: new Date(from),
-                    [Op.lte]: new Date(to)
+                    [Op.lt]: new Date(to)
                 },
             },
             raw: true,
@@ -50,6 +50,9 @@ const queryPostgres = async (from, to, city) => {
                     }
                 }
             }],
+            order: [
+                ['date', 'ASC']
+            ],
         });
         const endTime = performance.now();
         // await sequelize.close();
