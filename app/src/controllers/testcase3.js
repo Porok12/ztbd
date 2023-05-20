@@ -56,10 +56,13 @@ const countTimeMongo = async () => {
 
 
 const countTimeCassandra = async () => {
+    const location = `{country: 'poland', city: 'warsaw', longitude: 21.017532, latitude: 52.237049}`;
     try {
         await client.connect();
         const startTime = performance.now()
-        const measurements = await client.execute('SELECT * FROM measurements LIMIT 1');
+        const measurements = await client.execute(
+            "SELECT AVG(temperature), date FROM measurements WHERE location={country: 'poland', city: 'warsaw', longitude: 21.017532, latitude: 52.237049} GROUP BY date;"
+        );
         console.log(measurements.rows);
         const endTime = performance.now();
         return (endTime - startTime) / 1000;

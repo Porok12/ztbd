@@ -44,7 +44,7 @@ const countTimeCassandra = async () => {
     try {
         await client.connect();
         const startTime = performance.now()
-        await client.execute('SELECT * FROM measurements WHERE dew_point >= 15');
+        await client.execute('SELECT * FROM measurements WHERE dew_point >= 15 LIMIT 1000000 ALLOW FILTERING');
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
     } catch (error) {

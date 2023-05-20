@@ -50,10 +50,11 @@ const countTimeMongo = async () => {
 
 
 const countTimeCassandra = async () => {
+    const location = `{country: 'poland', city: 'warsaw', longitude: 21.017532, latitude: 52.237049}`;
     try {
         await client.connect();
         const startTime = performance.now()
-        await client.execute('SELECT * FROM measurements WHERE location.city=warsaw'); //TODO
+        await client.execute(`SELECT * FROM measurements WHERE location=${location} LIMIT 1000000`);
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
     } catch (error) {

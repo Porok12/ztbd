@@ -10,3 +10,4 @@ export const client = new cassandra.Client({
     }
 });
 
+// client.execute('CREATE INDEX IF NOT EXISTS index_date ON weather_db.measurements (xxx)');

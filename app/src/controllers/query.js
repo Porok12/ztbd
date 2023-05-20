@@ -5,6 +5,33 @@ import {Measurements as PsqlMeasurements, City as PsqlCity, sequelize} from "../
 import {performance} from "perf_hooks";
 import {client} from "../model/cassandra.js";
 
+const cities = {
+    warsaw: {
+        country: 'poland',
+        city: 'warsaw',
+        longitude: 21.017532,
+        latitude: 52.237049,
+    },
+    cracow: {
+        country: 'poland',
+        city: 'cracow',
+        longitude: 19.944544,
+        latitude: 50.049683,
+    },
+    wroclaw: {
+        country: 'poland',
+        city: 'wroclaw',
+        longitude: 17.0319771,
+        latitude: 51.1099804,
+    },
+    katowice: {
+        country: 'poland',
+        city: 'katowice',
+        longitude: 19.0133333,
+        latitude: 50.2597222,
+    },
+}
+
 const queryMongo = async (from, to, city) => {
     let data = [];
     let time = -1;
@@ -69,17 +96,20 @@ const queryCassandra = async (from, to, city) => {
     let data = [];
     let time = -1;
 
+    const location = `{country: '${cities[city].country}', city: '${cities[city].city}', longitude: ${cities[city].longitude}, latitude: ${cities[city].latitude}}`;
+    const query = `SELECT * FROM measurements WHERE location=${location} AND date > '${from}' AND date < '${to}' ORDER BY date ASC`;
+
     try {
         await client.connect();
         const startTime = performance.now();
-        const measurements = await client.execute(`SELECT * FROM measurements WHERE date >= ${from} AND date <= ${to}`);
+        const measurements = await client.execute(query);
         const endTime = performance.now();
-        data = measurements;
+        data = measurements.rows;
         time = (endTime - startTime) / 1000;
     } catch (error) {
         console.error('Unable to connect to the database:', error);
     } finally {
-        await client.shutdown();
+        // await client.shutdown();
     }
 
     return { data, time };

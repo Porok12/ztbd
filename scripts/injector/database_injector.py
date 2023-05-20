@@ -175,7 +175,7 @@ class DatabaseInjector:
             session.execute(
                 """
                 CREATE TABLE IF NOT EXISTS measurements (
-                    id UUID PRIMARY KEY,
+                    id UUID,
                     date TIMESTAMP,
                     temperature FLOAT,
                     dew_point FLOAT,
@@ -186,8 +186,9 @@ class DatabaseInjector:
                     pressure FLOAT,
                     precip FLOAT,
                     condition TEXT,
-                    location frozen<LOCATION>
-                )
+                    location frozen<LOCATION>,
+                    PRIMARY KEY (location, date)
+                ) WITH CLUSTERING ORDER BY (date ASC);
                 """
             )
             self._cassandra_db = session
