@@ -244,7 +244,7 @@ class DatabaseInjector:
 
     def inset_data(self, data: Record):
         city = self._city
-        date = datetime.strptime(' '.join([data['date'], data['time']]), '%Y-%m-%d %H:%M %p')
+        date = datetime.strptime(' '.join([data['date'], data['time']]), '%Y-%m-%d %I:%M %p')
 
         if DMBS.Mongo.value in self._dbms:
             self._mongo_db.weather_db.measurements.insert_one(

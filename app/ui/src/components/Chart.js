@@ -53,6 +53,7 @@ export const Chart = () => {
        fetch('/query?' + new URLSearchParams(params))
            .then(response => response.json())
            .then(response => {
+               console.debug('update data');
                setExecutedIn(Math.round(response.time * 100) / 100);
                setData(response.data);
            })

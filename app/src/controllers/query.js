@@ -36,13 +36,15 @@ const queryMongo = async (from, to, city) => {
     let data = [];
     let time = -1;
 
+    console.log('=== MONGODB ===');
+
     try {
         const mongo = await mongoose.connect('mongodb://mongo:mongo@localhost:27017/weather_db?authSource=admin&w=1');
         const startTime = performance.now();
         const measurements = await MongoMeasurement.find({
             date: { $gt: new Date(from), $lt: new Date(to) },
             'location.city': { $eq: city }
-        }).sort({date:1});
+        }, {_id: 0, temperature: 1, humidity: 1, date: 1}).sort({date:1});
         const endTime = performance.now();
         await mongo.disconnect();
         data = measurements;
@@ -58,19 +60,23 @@ const queryPostgres = async (from, to, city) => {
     let data = [];
     let time = -1;
 
+    console.log('=== POSTGRES ===');
+
     try {
         await sequelize.authenticate();
         const startTime = performance.now();
         const measurements = await PsqlMeasurements.findAll({
+            attributes: ['temperature', 'humidity', 'date'],
             where: {
                 date: {
                     [Op.gt]: new Date(from),
-                    [Op.lt]: new Date(to)
+                    [Op.lt]: new Date(to),
                 },
             },
             raw: true,
             include: [{
                 model: PsqlCity,
+                attributes: [],
                 where: {
                     city: {
                         [Op.eq]: city
@@ -96,8 +102,11 @@ const queryCassandra = async (from, to, city) => {
     let data = [];
     let time = -1;
 
+    console.log('=== CASSANDRA ===');
+
     const location = `{country: '${cities[city].country}', city: '${cities[city].city}', longitude: ${cities[city].longitude}, latitude: ${cities[city].latitude}}`;
-    const query = `SELECT * FROM measurements WHERE location=${location} AND date > '${from}' AND date < '${to}' ORDER BY date ASC`;
+    const query = `SELECT temperature, humidity, date FROM measurements WHERE location=${location} AND date > '${from}' AND date < '${to}' ORDER BY date ASC`;
+    console.log(query);
 
     try {
         await client.connect();
