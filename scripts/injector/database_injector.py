@@ -99,7 +99,7 @@ class DatabaseInjector:
                     "host='127.0.0.1' port=5432 user='postgres' password='postgres' dbname='postgres'",
                     autocommit=True,
                 )
-                # conn.execute("DROP DATABASE weather_db")  # Comment it if db does not exists
+                conn.execute("DROP DATABASE IF EXISTS weather_db")
                 conn.execute("CREATE DATABASE weather_db")
                 conn.close()
             conn = psycopg.connect(
@@ -110,7 +110,7 @@ class DatabaseInjector:
                 """
                 CREATE TABLE IF NOT EXISTS cities (
                     id SERIAL PRIMARY KEY,
-                    country VARCHAR(32) NOT NULL, 
+                    country VARCHAR(32) NOT NULL,
                     city VARCHAR(32) NOT NULL,
                     longitude REAL NOT NULL,
                     latitude REAL NOT NULL
@@ -165,7 +165,7 @@ class DatabaseInjector:
             session.execute(
                 """
                 CREATE TYPE IF NOT EXISTS location (
-                    country TEXT, 
+                    country TEXT,
                     city TEXT,
                     longitude FLOAT,
                     latitude FLOAT
@@ -254,7 +254,7 @@ class DatabaseInjector:
             cur = self._postgres_db.cursor()
             cur.execute(
                 """
-                INSERT INTO measurements (date, temperature, dew_point, humidity, wind, wind_speed, wind_gust, pressure, precip, condition, location) 
+                INSERT INTO measurements (date, temperature, dew_point, humidity, wind, wind_speed, wind_gust, pressure, precip, condition, location)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 self.__to_postgres(data, date, city)
@@ -282,7 +282,7 @@ class DatabaseInjector:
             cur = self._postgres_db.cursor()
             cur.execute(
                 f"""
-                INSERT INTO measurements (date, temperature, dew_point, humidity, wind, wind_speed, wind_gust, pressure, precip, condition, location) 
+                INSERT INTO measurements (date, temperature, dew_point, humidity, wind, wind_speed, wind_gust, pressure, precip, condition, location)
                 VALUES {("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)," * len(batch))[:-1]}
                 """,
                 reduce(lambda t1, t2: t1 + t2, [self.__to_postgres(data, dates[i], city) for i, data in enumerate(batch)])
