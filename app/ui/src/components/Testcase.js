@@ -47,7 +47,7 @@ const testcases = [
         loading: false,
     },
     {
-        title: 'testcase4',
+        title: 'Całe query w indexsie',
         url: '/testcase4',
         data: {
             mongo: 0,

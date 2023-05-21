@@ -36,7 +36,10 @@ const queryMongo = async (from, to, city) => {
     let data = [];
     let time = -1;
 
-    console.log('=== MONGODB ===');
+    mongoose.set("debug", (collectionName, method, query, doc) => {
+        console.log('=== MONGODB ===');
+        console.log(`db.${collectionName}.${method}(${JSON.stringify(query)})`);
+    });
 
     try {
         const mongo = await mongoose.connect('mongodb://mongo:mongo@localhost:27017/weather_db?authSource=admin&w=1');
