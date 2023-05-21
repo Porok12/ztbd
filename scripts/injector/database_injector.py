@@ -187,7 +187,7 @@ class DatabaseInjector:
                     precip FLOAT,
                     condition TEXT,
                     location frozen<LOCATION>,
-                    PRIMARY KEY (location, date)
+                    PRIMARY KEY (location, date, id)
                 ) WITH CLUSTERING ORDER BY (date ASC);
                 """
             )
