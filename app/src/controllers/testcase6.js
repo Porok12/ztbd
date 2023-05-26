@@ -12,18 +12,11 @@ const countTimePostgres = async () => {
         console.log('Connection has been established successfully.');
         const startTime = performance.now()
         const measurements = await PsqlMeasurements.findAll({
-            attributes: [
-                [sequelize.fn('COUNT', sequelize.col('temperature')), 'temp'],
-            ],
             where: {
-                temperature: { [Op.lte]: 32 }
+                temperature: { [Op.gte]: 32 },
+                humidity: { [Op.gt]: 75 }
             },
             raw: true,
-            include: [{
-                model: PsqlCity,
-                attributes: ['city']
-            }],
-            group: '"city"'
         });
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
@@ -39,7 +32,10 @@ const countTimeMongo = async () => {
         await mongoose.connect('mongodb://mongo:mongo@localhost:27017/weather_db?authSource=admin&w=1');
         console.log('Connection has been established successfully.');
         const startTime = performance.now()
-        const measurements = await MongoMeasurements.findOne({});
+        const measurements = await MongoMeasurements.find({
+                temperature: { $gte: 32 },
+                humidity: { $gt: 75 }
+        });
         console.log(measurements);
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
@@ -54,10 +50,11 @@ const countTimeMongo = async () => {
 
 const countTimeCassandra = async () => {
     try {
+        const location = `{country: 'poland', city: 'warsaw', longitude: 21.017532, latitude: 52.237049}`;
         await client.connect();
         const startTime = performance.now()
-        const measurements = await client.execute('SELECT * FROM measurements LIMIT 1');
-        console.log(measurements.rows);
+        const measurements = await client.execute(`SELECT * FROM measurements WHERE temperature >= 32 AND humidity > 75 ALLOW FILTERING;`);
+        // console.log(measurements.rows);
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
     } catch (error) {

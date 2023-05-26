@@ -57,7 +57,7 @@ const testcases = [
         loading: false,
     },
     {
-        title: 'testcase5',
+        title: 'Po pochmurnej pogodzie i od 1960r',
         url: '/testcase5',
         data: {
             mongo: 0,
@@ -67,7 +67,7 @@ const testcases = [
         loading: false,
     },
     {
-        title: 'testcase6',
+        title: '"temp" >= 32 i "humidity" > 75',
         url: '/testcase6',
         data: {
             mongo: 0,

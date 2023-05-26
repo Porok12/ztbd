@@ -17,7 +17,7 @@ const countTimePostgres = async () => {
                 model: PsqlCity,
                 where: {
                     city: {
-                        [Op.eq]: 'cracow'
+                        [Op.eq]: 'warsaw'
                     }
                 }
             }],
@@ -36,7 +36,7 @@ const countTimeMongo = async () => {
         await mongoose.connect('mongodb://mongo:mongo@localhost:27017/weather_db?authSource=admin&w=1');
         const startTime = performance.now()
         await MongoMeasurements.find({
-            'location.city': 'cracow'
+            'location.city': 'warsaw'
         }).limit(1000000);
         const endTime = performance.now();
         return (endTime - startTime) / 1000;

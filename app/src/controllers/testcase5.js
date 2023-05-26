@@ -12,18 +12,18 @@ const countTimePostgres = async () => {
         console.log('Connection has been established successfully.');
         const startTime = performance.now()
         const measurements = await PsqlMeasurements.findAll({
-            attributes: [
-                [sequelize.fn('COUNT', sequelize.col('temperature')), 'temp'],
-            ],
             where: {
-                temperature: { [Op.lte]: 32 }
+                date: {
+                    [Op.gt]: new Date("1960-10-10T00:00:00.000Z"),
+                },
+                condition: "Cloudy"
             },
             raw: true,
+            limit: 1000000,
             include: [{
                 model: PsqlCity,
-                attributes: ['city']
+                attributes: []
             }],
-            group: '"city"'
         });
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
@@ -39,7 +39,12 @@ const countTimeMongo = async () => {
         await mongoose.connect('mongodb://mongo:mongo@localhost:27017/weather_db?authSource=admin&w=1');
         console.log('Connection has been established successfully.');
         const startTime = performance.now()
-        const measurements = await MongoMeasurements.findOne({});
+        const measurements = await MongoMeasurements.find(
+                {
+                    condition: "Cloudy",
+                    date: { $gt: new Date("1960-10-10T00:00:00.000Z") }
+                }
+        ).limit(1000000);
         console.log(measurements);
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
@@ -54,10 +59,11 @@ const countTimeMongo = async () => {
 
 const countTimeCassandra = async () => {
     try {
+        const location = `{country: 'poland', city: 'warsaw', longitude: 21.017532, latitude: 52.237049}`;
         await client.connect();
         const startTime = performance.now()
-        const measurements = await client.execute('SELECT * FROM measurements LIMIT 1');
-        console.log(measurements.rows);
+        const measurements = await client.execute(`SELECT * FROM measurements Where condition='Cloudy' and date > '1960-10-10' LIMIT 1000000 ALLOW FILTERING;`);
+        // console.log(measurements.rows);
         const endTime = performance.now();
         return (endTime - startTime) / 1000;
     } catch (error) {
